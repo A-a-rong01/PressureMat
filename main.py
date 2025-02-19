@@ -25,11 +25,15 @@ serialInst.open()
 data = np.random.random((12,12))
 
 while True: 
-    command = input("Arduino Command (ON/OFF/blink/exit): ")
-    serialInst.write(command.encode('utf-8'))
-     
-    if command == 'exit':
-        exit()
+    # command = input("Arduino Command (ON/OFF/start/exit): ")
+    # serialInst.write(command.encode('utf-8'))
+    
+    # packet 
+    if serialInst.in_waiting:
+        packet = serialInst.readline()
+        print(packet.decode('utf'))
+    # if command == 'exit':
+    #     exit()
 
 
 
