@@ -1,38 +1,75 @@
-import time
 import serial
+
+import numpy as np
+
 import matplotlib.pyplot as plt
+
 import matplotlib.animation as animation
 
-dataList = []
-ser = serial.Serial("COM5", 9600)
 
-fig = plt.figure()
-ax = fig.add_subplot(111)
+# Adjust for ESP32 Serial Port
 
-time.sleep(2)
+port = "COM9"
 
-def animate(i, dataList,ser):
-    ser.write(b'g')
-    arduinoData_String = ser.readline().decode('ascii')
+baud_rate = 115200
 
-    try:
-        arduinoData_float = float(arduinoData_String)
-        dataList.append(arduinoData_float)
+rows, cols = 9, 9
 
-    except:
-        pass
 
-    dataList = dataList[-50:]
+ser = serial.Serial(port, baud_rate, timeout=1)
 
-    ax.clear()
-    ax.plot(dataList)
 
-    ax.set_ylim([0,5])
-    ax.set_title("Arduino Data")
-    ax.set_ylabel("Value")
+def read_serial_data():
 
- 
-ani = animation.FuncAnimation(fig, animate, frames=100, fargs=(dataList,ser), interval=50)
+    data = []
+
+    while True:
+
+        line = ser.readline().decode().strip()
+
+        if line == "START":
+
+            data = []
+
+        elif line == "END":
+
+            matrix = np.array(data, dtype=int)
+
+            # Flip the matrix horizontally
+
+            matrix_flipped = np.flip(matrix, axis=1)
+
+            return matrix_flipped
+
+        else:
+
+            row_data = [int(x) for x in line.split(",")]
+
+            if len(row_data) == cols:
+
+                data.append(row_data)
+
+                
+
+
+def update(frame):
+
+    sensor_data = read_serial_data()
+
+    if sensor_data.shape == (rows, cols):
+
+        heatmap.set_data(sensor_data)
+
+    return [heatmap]
+
+
+fig, ax = plt.subplots()
+
+heatmap = ax.imshow(np.zeros((rows, cols)), cmap="inferno", vmin=0, vmax=2000)
+
+plt.colorbar(heatmap)
+
+
+ani = animation.FuncAnimation(fig, update, interval=10, blit=False)
 
 plt.show()
-ser.close()
