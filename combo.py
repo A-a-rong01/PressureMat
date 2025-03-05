@@ -9,6 +9,11 @@ ports = serial.tools.list_ports.comports()
 portsList = []
 dataList = []
 
+fig = plt.figure()
+ax = fig.add_subplot(111)
+
+time.sleep(2)
+
 for one in ports:
     portsList.append(str(one))
     print(str(one))
@@ -25,15 +30,39 @@ serialInst.baudrate = 9600
 serialInst.port = use
 serialInst.open()
 
+def animate(i, dataList):
+    packet = serialInst.readline()
+    newData = packet.decode('utf')
+
+    try:
+        newData = float(newData.strip())
+        dataList.append(newData)
+
+    except:
+        pass
+
+    dataList[:] = dataList[-50:]
+
+
+    ax.clear()
+    ax.plot(dataList)
+
+    ax.set_ylim([0,5])
+    ax.set_title("Arduino Data")
+    ax.set_ylabel("Value")
 
 while True: 
-     # command = input("Arduino Command (ON/OFF/start/exit): ")
+    # command = input("Arduino Command (ON/OFF/start/exit): ")
     # serialInst.write(command.encode('utf-8'))
     
     # packet 
     if serialInst.in_waiting:
-        packet = serialInst.readline()
-        print(packet.decode('utf'))
+        ani = animation.FuncAnimation(fig, animate, frames=100, fargs=(dataList), interval=100)
+
+        plt.show()
+
+
+    
     # if command == 'exit':
     #     exit()
 
