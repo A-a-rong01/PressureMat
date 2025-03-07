@@ -20,10 +20,11 @@ for i in range(len(portsList)):
         use = "COM" + str(com)
         print(use)
 
-serialInst = serial.Serial()
-serialInst.baudrate = 9600
-serialInst.port = use
-serialInst.open()
+def openSerial(): 
+    serialInst = serial.Serial()
+    serialInst.baudrate = 9600
+    serialInst.port = use
+    serialInst.open()
 
 
 while True: 
